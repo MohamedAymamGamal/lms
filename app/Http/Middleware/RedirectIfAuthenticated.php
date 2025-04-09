@@ -1,8 +1,6 @@
 <?php
-
 namespace App\Http\Middleware;
 
-use App\Providers\RouteServiceProvider;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,8 +10,6 @@ class RedirectIfAuthenticated
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next, string ...$guards): Response
     {
@@ -21,15 +17,16 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
+                $user = Auth::user();
 
-                if (Auth::check() && Auth::user()->role == 'user') {
-                    return redirect('/dashboard');
-                }
-                if (Auth::check() && Auth::user()->role == 'instructor') {
-                    return redirect('/instructor/dashboard');
-                }
-                if (Auth::check() && Auth::user()->role == 'admin') {
-                    return redirect('/admin/dashboard');
+                // Prevent access to any login page if already authenticated
+                if ($request->is('login') || $request->is('admin/login') || $request->is('instructor/login')) {
+                    return match ($user->role) {
+                        'user' => redirect('/dashboard'),
+                        'instructor' => redirect('/instructor/dashboard'),
+                        'admin' => redirect('/admin/dashboard'),
+                        default => redirect('/login')->withErrors(['message' => 'Unauthorized role.']),
+                    };
                 }
             }
         }

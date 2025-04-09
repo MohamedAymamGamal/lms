@@ -103,8 +103,8 @@ class AdminController extends Controller
             'name' => ['required','string','max:255'],
             'email' => ['required', 'string','unique:users'],
         ]);
-
-        User::insert([
+        //database   // fieldname
+        User::insefinrt([
             'name' => $request->name,
             'username' => $request->username,
             'email' => $request->email,
@@ -162,7 +162,7 @@ class AdminController extends Controller
 
     }// End Method
     public function AdminCourseDetails($id){
-        $course =    Course::find($id);
+        $course = Course::find($id);
         return view('admin.backend.courses.course_details',compact("course"));
     }
     public function AllAdmin(){

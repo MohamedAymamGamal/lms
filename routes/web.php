@@ -327,3 +327,14 @@ Route::controller(AdminController::class)->group(function(){
     Route::post('/update/admin/{id}','UpdateAdmin')->name('update.admin'); 
     Route::get('/delete/admin/{id}','DeleteAdmin')->name('delete.admin'); 
 });
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+});
+
+Route::middleware(['auth', 'role:instructor'])->group(function () {
+    Route::get('/instructor/dashboard', [InstructorController::class, 'index'])->name('instructor.dashboard');
+});
+
+Route::middleware(['auth', 'role:user'])->group(function () {
+    Route::get('/dashboard', [UserController::class, 'index'])->name('user.dashboard');
+});

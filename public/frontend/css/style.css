@@ -5554,7 +5554,7 @@ div.datedropper .picker .pick-lg-b li {
 
 /*===== main-menu ======*/
 .main-menu {
-  margin-right: 18px; }
+  margin-right: 180px; }
   .main-menu > ul > li {
     display: inline-block;
     margin-right: 18px;
@@ -5614,7 +5614,7 @@ div.datedropper .picker .pick-lg-b li {
         .main-menu > ul > li .dropdown-menu-item > li .menu-banner img {
           object-fit: cover; }
     .main-menu > ul > li .mega-menu {
-      top: 95px;
+      top: 80px;
       width: 100%;
       padding-top: 0;
       padding-bottom: 0; }

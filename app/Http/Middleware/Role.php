@@ -1,43 +1,55 @@
 <?php
-
 namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
-use Carbon\Carbon;
-use App\Models\User;
+use Symfony\Component\HttpFoundation\Response;
+
 class Role
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, $role): Response
+    public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (Auth::check()) {
-            $expireTime = Carbon::now()->addSeconds(30);
-            Cache::put('user-is-online' . Auth::user()->id, true, $expireTime);
-            User::where('id',Auth::user()->id)->update(['last_seen' => Carbon::now()]);
+        if (!Auth::check()) {
+            return redirect('/login')->withErrors(['message' => 'Please log in first.']);
         }
 
-        $userRole = $request->user()->role;
+        $user = Auth::user();
 
-        if ($userRole === 'user' && $role !== 'user') {
-            return redirect('dashboard');
-        } elseif ($userRole === 'admin' && $role === 'user') {
-            return redirect('/admin/dashboard');
-        } elseif ($userRole === 'instructor' && $role === 'user') {
-            return redirect('/instructor/dashboard');
-        } elseif ($userRole === 'admin' && $role === 'instructor') {
-            return redirect('/admin/dashboard');
-        } elseif ($userRole === 'instructor' && $role === 'admin') {
-            return redirect('/instructor/dashboard');
+        // Prevent users from accessing login pages once authenticated
+        if ($this->isLoginPage($request)) {
+            return redirect($this->getDashboardRoute($user->role));
+        }
+
+        // Check if the user has the correct role
+        if ($user->role !== $role) {
+            return redirect($this->getDashboardRoute($user->role))
+                ->withErrors(['message' => 'Unauthorized access.']);
         }
 
         return $next($request);
+    }
+
+    /**
+     * Get the correct dashboard route based on user role.
+     */
+    private function getDashboardRoute(string $role): string
+    {
+        return match ($role) {
+            'admin' => '/admin/dashboard',
+            'instructor' => '/instructor/dashboard',
+            'user' => '/dashboard',
+            default => '/login',
+        };
+    }
+    /**
+     * Check if the request is for a login page.
+     */
+    private function isLoginPage(Request $request): bool
+    {
+        return $request->is('login') || $request->is('admin/login') || $request->is('instructor/login');
     }
 }

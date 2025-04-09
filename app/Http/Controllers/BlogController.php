@@ -36,6 +36,7 @@ class BlogController extends Controller
         $categories = BlogCategory::find($id);
         return response()->json($categories);
     }
+
     public function UpdateBlogCategory(Request $request)
     {
         $cat_id = $request->cat_id;
